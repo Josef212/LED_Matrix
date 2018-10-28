@@ -25,6 +25,8 @@
 // Interrumption pin for the pulsor 
 #define INTERRUPT_PIN 2 // 3 also abailable
 
+#define BRIGHT_PIN A1
+
 // LEDs object
 CRGB leds[NUM_LEDS];
 
@@ -40,7 +42,7 @@ const long test[] PROGMEM =
   0x00ffc0, 0xff9000, 0xff0000, 0xffffff, 0x000000, 0x000000, 0xffffff, 0x00ffc0, 
   0x00ffc0, 0x1eff00, 0x1eff00, 0x1eff00, 0x004eff, 0xff0000, 0x00ffc0, 0x00ffc0, 
   0xf0ff00, 0x00ffc0, 0x9600ff, 0x9600ff, 0x9600ff, 0xff9000, 0xff9000, 0x00ffc0, 
-  0xff0000, 0xff0000, 0xff9000, 0xffffff, 0x000000, 0x000000, 0x004eff, 0x004eff,
+  0xff0000, 0xff0000, 0xff9000, 0xffffff, 0x000000, 0x000000, 0x004eff, 0x004eff
 };
 
 // ================================================================
@@ -61,6 +63,29 @@ void DisplayFrame(const long* frame)
   FastLED.show();
 }
 
+void ButtonDown()
+{
+  // Just show a msg for testing. In future will change animation or switch from static sate to dynamic
+  Serial.print("Btn pressed.");
+}
+
+void Brightness()
+{
+  // Read the analog potentiometer value, map it to brightness range and set the leds brightness.
+  // TODO: May be define a min and max brightness and clamp the value
+  Serial.print("Analog: ");
+  int a = analogRead(BRIGHT_PIN);
+  Serial.print(a); // From 0 - 1023
+  Serial.print("\tBrightness: ");
+  int mapped = map(a, 0, 1023, 0, 255);
+  Serial.print(mapped);
+
+  // Constrain/Clamp the value
+  //mapped = constrain(mapped, MIN, MAX);
+
+  FastLED.setBrightness(mapped);
+}
+
 // ----------------------------------------------------------------------------
 
 void setup() 
@@ -70,6 +95,11 @@ void setup()
   // Setting the LEDs brightness
   FastLED.setBrightness(BRIGHTNESS);
 
+  // Setting the interrupt pin
+  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), ButtonDown, RISING);
+
+  Serial.begin(9600);
 }
 
 void loop() 
@@ -78,5 +108,8 @@ void loop()
   DisplayFrame(test);
 
   // Small delay between frames updates
-  delay(500);
+  FastLED.delay(500);
+
+  // Check and set the brightness.
+  Brightness();
 }
