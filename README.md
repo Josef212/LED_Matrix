@@ -6,7 +6,8 @@ The array is written into a txt named as the image.
 The project also includes the arduino sketch to control the led matrix. The matrix size is controlled by a couple of macros.
 Frames are stored with arrays in the Flash memory.
 
-Will update how to display the arrays soon. ###TODO
+ ### TODO
+Will update how to display the arrays soon.
 
 The sketch also includes the possibility to get a button interruption and control the leds brightness with a potentiometer on a analog pin.
 
