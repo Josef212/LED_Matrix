@@ -50,7 +50,7 @@ def ConvertImage(image, output):
 
 		# Remove the comma from the last row
 		if row == rows - 1:
-			line = line[:-1]
+			line = line[:-2]
 
 		line += "\n"
 
