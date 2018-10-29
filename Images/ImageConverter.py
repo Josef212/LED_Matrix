@@ -70,3 +70,5 @@ with open(OUT_TXT, 'w') as txt:
 	ConvertImage(img_array, txt)
 
 	txt.close()
+
+img.close()
