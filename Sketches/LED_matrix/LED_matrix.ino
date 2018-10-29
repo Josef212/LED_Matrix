@@ -12,8 +12,8 @@
 #include <FastLED.h>
 
 // Number of leds
-#define LEDS_W 8
-#define LEDS_H 8
+#define LEDS_W 4
+#define LEDS_H 4
 #define NUM_LEDS LEDS_W * LEDS_H
 
 // LEDs brightness
@@ -30,6 +30,9 @@
 // LEDs object
 CRGB leds[NUM_LEDS];
 
+// Loop throw different images/aniamtions or only reproduce one
+volatile boolean dynamic = true;
+
 // ==== Frames ====================================================
 
 // A simple frame storing single pixel color values in hex mode (8x8 for example)
@@ -43,6 +46,23 @@ const long test[] PROGMEM =
   0x00ffc0, 0x1eff00, 0x1eff00, 0x1eff00, 0x004eff, 0xff0000, 0x00ffc0, 0x00ffc0, 
   0xf0ff00, 0x00ffc0, 0x9600ff, 0x9600ff, 0x9600ff, 0xff9000, 0xff9000, 0x00ffc0, 
   0xff0000, 0xff0000, 0xff9000, 0xffffff, 0x000000, 0x000000, 0x004eff, 0x004eff
+};
+
+const long test1[] PROGMEM = 
+{
+  0xf0ff00, 0xf0ff00, 0xff0090, 0x9600ff, 0x9600ff, 0x1eff00, 0x1eff00, 0x004eff, 
+  0x00ffc0, 0x1eff00, 0x1eff00, 0x1eff00, 0x004eff, 0xff0000, 0x00ffc0, 0x00ffc0, 
+  0xff0000, 0x004eff, 0x1eff00, 0x004eff, 0x9600ff, 0xff0090, 0x004eff, 0x004eff, 
+  0xf0ff00, 0x00ffc0, 0x9600ff, 0x9600ff, 0x9600ff, 0xff9000, 0xff9000, 0x00ffc0, 
+  0xff0000, 0xff9000, 0xff9000, 0x9600ff, 0xffffff, 0xf0ff00, 0x004eff, 0xf0ff00, 
+  0x004eff, 0xf0ff00, 0xff0090, 0x000000, 0x004eff, 0xffffff, 0xff0000, 0xff9000, 
+  0x00ffc0, 0xff9000, 0xff0000, 0xffffff, 0x000000, 0x000000, 0xffffff, 0x00ffc0, 
+  0xff0000, 0xff0000, 0xff9000, 0xffffff, 0x000000, 0x000000, 0x004eff, 0x004eff
+};
+
+const long t[2][256] PROGMEM = 
+{
+  test, test1
 };
 
 // ================================================================
@@ -63,27 +83,32 @@ void DisplayFrame(const long* frame)
   FastLED.show();
 }
 
+void DisplayAnimation(const long** anim, int frames, int delayBetweenFrames)
+{
+  for(int i = 0; i < frames; ++i)
+  {
+    DisplayFrame(anim[i]);
+    FastLED.delay(delayBetweenFrames);
+  }
+}
+
 void ButtonDown()
 {
-  // Just show a msg for testing. In future will change animation or switch from static sate to dynamic
-  Serial.print("Btn pressed.");
+  // Change the dynamic state according to the toggle button state.
+  dynamic = digitalRead(INTERRUPT_PIN);
 }
 
 void Brightness()
 {
   // Read the analog potentiometer value, map it to brightness range and set the leds brightness.
   // TODO: May be define a min and max brightness and clamp the value
-  Serial.print("Analog: ");
-  int a = analogRead(BRIGHT_PIN);
-  Serial.print(a); // From 0 - 1023
-  Serial.print("\tBrightness: ");
-  int mapped = map(a, 0, 1023, 0, 255);
-  Serial.print(mapped);
+  int brightness = analogRead(BRIGHT_PIN) / 4;
+  //int mapped = map(a, 0, 1023, 0, 255);
 
   // Constrain/Clamp the value
   //mapped = constrain(mapped, MIN, MAX);
 
-  FastLED.setBrightness(mapped);
+  FastLED.setBrightness(brightness);
 }
 
 // ----------------------------------------------------------------------------
@@ -93,11 +118,14 @@ void setup()
   // Init the LEDs
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   // Setting the LEDs brightness
-  FastLED.setBrightness(BRIGHTNESS);
+  Brightness();
 
   // Setting the interrupt pin
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), ButtonDown, RISING);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), ButtonDown, CHANGE);
+
+  // Init the dynamic boolean according to the initial toggle buttton state
+  dynamic = digitalRead(INTERRUPT_PIN);
 
   Serial.begin(9600);
 }
