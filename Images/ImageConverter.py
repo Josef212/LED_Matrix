@@ -4,7 +4,7 @@ import os
 
 # =========================================================
 #RoboFace
-IMAGE_PATH = "test.png"
+IMAGE_PATH = "test1.png"
 IMAGE_NAME = os.path.splitext(IMAGE_PATH)[0]
 OUT_TXT = IMAGE_NAME + ".txt"
 
@@ -14,7 +14,7 @@ def ClampColor(v):
 	return max(0, min(v, 255))
 
 def rgb2hex(rgb):
-	return "0x{:02x}{:02x}{:02x}".format(ClampColor(rgb[0]), ClampColor(rgb[1]), ClampColor(rgb[2]))
+	return ("0x" + ("{:02x}{:02x}{:02x}".format(ClampColor(rgb[0]), ClampColor(rgb[1]), ClampColor(rgb[2]))).upper())
 
 def hex2rgb(hex):
 	return tuple(map(ord, hex[1:].decode('hex')))
