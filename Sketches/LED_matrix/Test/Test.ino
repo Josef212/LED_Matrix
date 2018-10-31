@@ -38,6 +38,7 @@ void GetBrightness()
 void DisplayFrame(const long* frame, int delayTime = 0, bool checkLoop = false)
 {
   GetBrightness();
+  
   do
   {
     for(int i = 0; i < NUM_LEDS; ++i)
@@ -50,35 +51,6 @@ void DisplayFrame(const long* frame, int delayTime = 0, bool checkLoop = false)
     if(delayTime > 0) FastLED.delay(delayTime);
   
   }while(checkLoop && !digitalRead(DYNAMIC_PIN));
-}
-
-void Test()
-{
-  GetBrightness();
-
-  FastLED.clear();
-
-  leds[0] = CRGB(255, 0, 0);
-  leds[1] = CRGB(0, 255, 0);
-  leds[2] = CRGB(0, 0, 255);
-  leds[3] = CRGB(255, 255, 0);
-  leds[4] = CRGB(0, 255, 255);
-  leds[5] = CRGB(255, 0, 255);
-  leds[6] = CRGB(255, 255, 255);
-  leds[7] = CRGB(128, 0, 200);
-  
-  leds[8] = CRGB(255, 0, 0);
-  leds[9] = CRGB(255, 0, 0);
-  leds[10] = CRGB(255, 0, 0);
-  leds[11] = CRGB(255, 0, 0);
-  leds[12] = CRGB(255, 0, 0);
-  leds[13] = CRGB(255, 0, 0);
-  leds[14] = CRGB(255, 0, 0);
-  leds[15] = CRGB(255, 0, 0);
-  
-  FastLED.show();
-
-  FastLED.delay(1000);
 }
 
 // ===================================================
@@ -97,7 +69,6 @@ void setup()
 void loop() {
   // put your main code here, to run repeatedly:
 
-  //Test();
   DisplayFrame(&Frame0[0], 500);
   DisplayFrame(&Frame1[0], 500);
 
