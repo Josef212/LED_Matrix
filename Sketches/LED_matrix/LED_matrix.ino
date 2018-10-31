@@ -12,26 +12,23 @@
 #include <FastLED.h>
 
 // Number of leds
-#define LEDS_W 4
-#define LEDS_H 4
+#define LEDS_W 16
+#define LEDS_H 16
 #define NUM_LEDS LEDS_W * LEDS_H
 
 // LEDs brightness
-#define BRIGHTNESS 15
+#define DEFAULT_BRIGHTNESS 15
+#define MIN_BRIGHTNESS 5
 
 // Leds data pin
 #define DATA_PIN 6
 
-// Interrumption pin for the pulsor 
-#define INTERRUPT_PIN 2 // 3 also abailable
-
 #define BRIGHT_PIN A1
+
+#define DYNAMIC_PIN 2
 
 // LEDs object
 CRGB leds[NUM_LEDS];
-
-// Loop throw different images/aniamtions or only reproduce one
-volatile boolean dynamic = true;
 
 // ==== Frames ====================================================
 
@@ -60,55 +57,42 @@ const long test1[] PROGMEM =
   0xff0000, 0xff0000, 0xff9000, 0xffffff, 0x000000, 0x000000, 0x004eff, 0x004eff
 };
 
-const long t[2][256] PROGMEM = 
-{
-  test, test1
-};
-
 // ================================================================
-
-// Function to display a single frame
-void DisplayFrame(const long* frame)
-{
-    // Clearing all leds
-  FastLED.clear();
-  
-  // Looping throw a frame to  display it
-  for(int i = 0; i < NUM_LEDS; ++i)
-  {
-    leds[i] = pgm_read_word(&(frame[i]));
-  }
-
-  // Actually display the led info when setted
-  FastLED.show();
-}
-
-void DisplayAnimation(const long** anim, int frames, int delayBetweenFrames)
-{
-  for(int i = 0; i < frames; ++i)
-  {
-    DisplayFrame(anim[i]);
-    FastLED.delay(delayBetweenFrames);
-  }
-}
-
-void ButtonDown()
-{
-  // Change the dynamic state according to the toggle button state.
-  dynamic = digitalRead(INTERRUPT_PIN);
-}
 
 void Brightness()
 {
-  // Read the analog potentiometer value, map it to brightness range and set the leds brightness.
-  // TODO: May be define a min and max brightness and clamp the value
-  int brightness = analogRead(BRIGHT_PIN) / 4;
-  //int mapped = map(a, 0, 1023, 0, 255);
+  // Getting the brightness from the potentiometer, mapping the value and clamping it before setting it.
+  FastLED.setBrightness(constrain(analogRead(BRIGHT_PIN) / 4, MIN_BRIGHTNESS, 255));
+}
 
-  // Constrain/Clamp the value
-  //mapped = constrain(mapped, MIN, MAX);
+// Function to display a single frame
+void DisplayFrame(const long* frame, int delayTime = 0, bool checkLoop = false)
+{
+  do
+  {
+    Brightness();
+  
+    // Looping throw a frame to  display it
+    for(int i = 0; i < NUM_LEDS; ++i)
+    {
+      leds[i] = pgm_read_dword(&(frame[i]));
+    }
 
-  FastLED.setBrightness(brightness);
+    // Actually display the led info when setted
+    FastLED.show();
+
+    if(delayTime > 0) FastLED.delay(delayTime);
+    
+  }while(checkLoop && !digitalRead(INTERRUPT_PIN));
+}
+
+void Display2FramesAnimation(const long* frame0, const long* frame1, int delayBetweenFrames = TIME_BETWEEN_FRAMES, bool checkLoop = true)
+{
+  do
+  {
+    DisplayFrame(frame0, delayBetweenFrames);
+    DisplayFrame(frame1, delayBetweenFrames);
+  }while(checkLoop && !digitalRead(DYNAMIC_PIN));
 }
 
 // ----------------------------------------------------------------------------
@@ -117,27 +101,17 @@ void setup()
 {
   // Init the LEDs
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+
+  pinMode(DYNAMIC_PIN, INPUT);
+  pinMode(BRIGHT_PIN, INPUT);
+  
   // Setting the LEDs brightness
   Brightness();
-
-  // Setting the interrupt pin
-  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), ButtonDown, CHANGE);
-
-  // Init the dynamic boolean according to the initial toggle buttton state
-  dynamic = digitalRead(INTERRUPT_PIN);
-
-  Serial.begin(9600);
 }
 
 void loop() 
 {
   // Display a single frame
-  DisplayFrame(test);
-
-  // Small delay between frames updates
-  FastLED.delay(500);
-
-  // Check and set the brightness.
-  Brightness();
+  DisplayFrame(&test[0], 500, true);
+  DisplayFrame(&test1[0], 500, true);
 }
