@@ -6,6 +6,8 @@
 #define BRIGHT_PIN A0
 #define DYNAMIC_PIN 2
 
+#define TIME_BETWEEN_FRAMES 500
+
 // ===================================================
 
 CRGB leds[NUM_LEDS];
@@ -22,10 +24,26 @@ const long Frame0[] PROGMEM =
 
 const long Frame1[] PROGMEM = 
 {
-  0xFF6600, 0x12FF00, 0xFF6600, 0x00FCFF, 
+  0xFF0000, 0x12FF00, 0xFF6600, 0x00FCFF, 
   0x2C7E2A, 0xFFFFFF, 0x00FF9C, 0x4D2A00,
   0xFF0000, 0xFF00A2, 0x0600FF, 0xD8FF00, 
   0xFF004E, 0x000000, 0xFFF600, 0x0C00F9
+};
+
+const long Frame2[] PROGMEM = 
+{ 
+  0x2C7E2A, 0xFFFFFF, 0x00FF9C, 0x4D2A00,
+  0xFF0000, 0xFF00A2, 0x0600FF, 0xD8FF00,
+  0xFF6600, 0x12FF00, 0xFF6600, 0x00FCFF, 
+  0xFF004E, 0x000000, 0xFFF600, 0x0C00F9
+};
+
+const long Frame3[] PROGMEM = 
+{ 
+  0x2C7E2A, 0x000000, 0xFFF600, 0x0C00F9,
+  0xFF0000, 0xFF00A2, 0x0600FF, 0xD8FF00,
+  0x2C7E2A, 0xFFFFFF, 0x00FF9C, 0x4D2A00,
+  0xFF6600, 0x12FF00, 0xFF6600, 0x00FCFF 
 };
 
 // ===================================================
@@ -53,6 +71,15 @@ void DisplayFrame(const long* frame, int delayTime = 0, bool checkLoop = false)
   }while(checkLoop && !digitalRead(DYNAMIC_PIN));
 }
 
+void Display2FramesAnimation(const long* frame0, const long* frame1, int delayBetweenFrames = TIME_BETWEEN_FRAMES, bool checkLoop = true)
+{
+  do
+  {
+    DisplayFrame(frame0, delayBetweenFrames);
+    DisplayFrame(frame1, delayBetweenFrames);
+  }while(checkLoop && !digitalRead(DYNAMIC_PIN));
+}
+
 // ===================================================
 
 
@@ -69,7 +96,12 @@ void setup()
 void loop() {
   // put your main code here, to run repeatedly:
 
-  DisplayFrame(&Frame0[0], 500);
-  DisplayFrame(&Frame1[0], 500);
+  //DisplayFrame(&Frame0[0], 500);
+  //DisplayFrame(&Frame1[0], 500);
+
+  Display2FramesAnimation(&Frame0[0], &Frame1[0]);
+
+  Display2FramesAnimation(&Frame2[0], &Frame3[0]);
+
 
 }
