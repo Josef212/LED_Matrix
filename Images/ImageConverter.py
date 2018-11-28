@@ -4,7 +4,7 @@ import os
 
 # =========================================================
 #RoboFace
-IMAGE_PATH = "test1.png"
+IMAGE_PATH = "../Frames/Landscape/Landscape_02.png"
 IMAGE_NAME = os.path.splitext(IMAGE_PATH)[0]
 OUT_TXT = IMAGE_NAME + ".txt"
 
